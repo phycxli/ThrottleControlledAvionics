@@ -132,7 +132,7 @@ namespace ThrottleControlledAvionics
         protected override void DrawThis()
         {
             GUILayout.Label(Label, Styles.white, GUILayout.ExpandWidth(false));
-            if(GUILayout.Button(On? "On" : "Off", 
+            if(GUILayout.Button(On? Loc.T("On", "On") : Loc.T("Off", "Off"),
                                 On? Styles.enabled_button : Styles.active_button, 
                                 GUILayout.ExpandWidth(false)))
                 On = !On;
@@ -159,7 +159,7 @@ namespace ThrottleControlledAvionics
                     Edit = false; 
                 }
             }
-            else Edit |= GUILayout.Button(new GUIContent(string.Format("{0} {1}{2}", Name, Value, Suffix), Label.tooltip), Styles.normal_button);
+            else Edit |= GUILayout.Button(new GUIContent(string.Format("{0} {1}{2}", DisplayName, Value, Suffix), Label.tooltip), Styles.normal_button);
             GUILayout.EndHorizontal();
         }
     }

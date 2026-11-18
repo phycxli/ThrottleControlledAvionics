@@ -247,7 +247,7 @@ namespace ThrottleControlledAvionics
 
         protected bool coast(Vector3d pg_vel)
         {
-            Status("Coasting...");
+            Status(Loc.T("Landing_Coasting", "Coasting..."));
             CFG.BR.OffIfOn(BearingMode.Auto);
             CFG.AT.OnIfNot(Attitude.Custom);
             ATC.SetThrustDirW(-pg_vel.xzy);
@@ -318,7 +318,7 @@ namespace ThrottleControlledAvionics
             VSL.OnPlanetParams.ActivateLaunchClamps();
             if(VSL.VerticalSpeed.Absolute / VSL.Physics.G < Config.INST.MinClimbTime)
             {
-                Status("Liftoff...");
+                Status(Loc.T("ToOrbit_Liftoff", "Liftoff..."));
                 CFG.DisableVSC();
                 CFG.VTOLAssistON = true;
                 THR.Throttle = max_G_throttle();
@@ -427,7 +427,7 @@ namespace ThrottleControlledAvionics
             }
             ATC.SetThrustDirW(-vel.xzy);
             prevApA = VesselOrbit.ApA;
-            Status("Gravity turn...");
+            Status(Loc.T("ToOrbit_GravityTurn", "Gravity turn..."));
             return true;
         }
 
@@ -437,33 +437,40 @@ namespace ThrottleControlledAvionics
             {
                 GUILayout.BeginVertical();
                 {
-                    GUILayout.Label(new GUIContent("Max. Apoapsis:",
+                    GUILayout.Label(Loc.Content("ToOrbit_MaxApoapsis", "Max. Apoapsis:",
+                            "ToOrbit_MaxApoapsis_Tooltip",
                             "The maximum altitude of the starting sub-orbital trajectory "+
                             "that is used to either circularize or to get to a higher orbit."),
                         GUILayout.ExpandWidth(true));
-                    GUILayout.Label(new GUIContent("Time to Apoapsis:",
+                    GUILayout.Label(Loc.Content("ToOrbit_TimeToApoapsis", "Time to Apoapsis:",
+                                                   "ToOrbit_TimeToApoapsis_Tooltip",
                                                    "More time to apoapsis means steeper trajectory " +
                                                    "and greater acceleration. Low values can " +
                                                    "save a lot of fuel."),
                                     GUILayout.ExpandWidth(true));
-                    GUILayout.Label(new GUIContent("Min. Throttle:",
+                    GUILayout.Label(Loc.Content("ToOrbit_MinThrottle", "Min. Throttle:",
+                                                   "ToOrbit_MinThrottle_Tooltip",
                                                    "Minimum throttle value. " +
                                                    "Increasing it will shorten the last stage of the ascent."),
                                     GUILayout.ExpandWidth(true));
-                    GUILayout.Label(new GUIContent("G.Turn Angle:",
+                    GUILayout.Label(Loc.Content("ToOrbit_GTurnAngle", "G.Turn Angle:",
+                            "ToOrbit_GTurnAngle_Tooltip",
                             "The initial deviation from vertical direction. " +
                             "After that, the ship will follow prograde. Smaller angle gives steeper trajectory."),
                         GUILayout.ExpandWidth(true));
-                    GUILayout.Label(new GUIContent("Max. Acceleration:",
+                    GUILayout.Label(Loc.Content("ToOrbit_MaxAcceleration", "Max. Acceleration:",
+                                                   "ToOrbit_MaxAcceleration_Tooltip",
                                                    "Maximum allowed acceleration (in gees of the current planet). " +
                                                    "Smooths gravity turn on low-gravity worlds. Saves fuel."),
                                     GUILayout.ExpandWidth(true));
-                    GUILayout.Label(new GUIContent("Max. Dyn.Pressure:",
+                    GUILayout.Label(Loc.Content("ToOrbit_MaxDynPressure", "Max. Dyn.Pressure:",
+                            "ToOrbit_MaxDynPressure_Tooltip",
                             "Maximum allowed dynamic pressure (for gravity turn in atmosphere). "
                             + "Determines how much the ship is allowed to deviate from prograde. "
                             + "If current dynamic pressure is higher, the ship will follow prograde exactly."),
                         GUILayout.ExpandWidth(true));
-                    GUILayout.Label(new GUIContent("Max. Angle of Attack:",
+                    GUILayout.Label(Loc.Content("ToOrbit_MaxAoA", "Max. Angle of Attack:",
+                            "ToOrbit_MaxAoA_Tooltip",
                             "Maximum allowed angle of attack. "
                             + "This is the hard limit that is modified by maximum dynamic pressure setting."),
                         GUILayout.ExpandWidth(true));
@@ -475,9 +482,9 @@ namespace ThrottleControlledAvionics
                     GUILayout.BeginHorizontal();
                     {
                         GUILayout.FlexibleSpace();
-                        Utils.ButtonSwitch("Auto",
+                        Utils.ButtonSwitch(Loc.T("ToOrbit_Auto", "Auto"),
                             ref AutoTimeToApA,
-                            "Tune time to apoapsis automatically",
+                            Loc.T("ToOrbit_Auto_Tooltip", "Tune time to apoapsis automatically"),
                             GUILayout.ExpandWidth(false));
                     }
                     GUILayout.EndHorizontal();
@@ -509,23 +516,23 @@ namespace ThrottleControlledAvionics
             {
                 GUILayout.BeginVertical();
                 {
-                    GUILayout.Label("Inclination:");
-                    GUILayout.Label("Apoapsis:");
-                    GUILayout.Label("Time to Apoapsis:");
-                    GUILayout.Label("Angle of Attack:");
-                    GUILayout.Label("Dyn. Pressure:");
-                    GUILayout.Label("Eng. Efficiency:");
+                    GUILayout.Label(Loc.T("ToOrbit_Inclination", "Inclination:"));
+                    GUILayout.Label(Loc.T("ToOrbit_ApoapsisLabel", "Apoapsis:"));
+                    GUILayout.Label(Loc.T("ToOrbit_TimeToApoapsisLabel", "Time to Apoapsis:"));
+                    GUILayout.Label(Loc.T("ToOrbit_AngleOfAttack", "Angle of Attack:"));
+                    GUILayout.Label(Loc.T("ToOrbit_DynPressure", "Dyn. Pressure:"));
+                    GUILayout.Label(Loc.T("ToOrbit_EngEfficiency", "Eng. Efficiency:"));
                 }
                 GUILayout.EndVertical();
                 GUILayout.BeginVertical();
                 {
                     if(target_inclination >= 0)
-                        GUILayout.Label(string.Format("{0:F3}° ► {1:F3}° Err: {2:F3}°",
+                        GUILayout.Label(string.Format(Loc.T("ToOrbit_InclinationErrorTarget", "{0:F3}° ► {1:F3}° Err: {2:F3}°"),
                             VesselOrbit.inclination,
                             target_inclination,
                             norm_correction.LastError));
                     else
-                        GUILayout.Label(string.Format("{0:F3}° Err: {1:F3}°",
+                        GUILayout.Label(string.Format(Loc.T("ToOrbit_InclinationError", "{0:F3}° Err: {1:F3}°"),
                             VesselOrbit.inclination,
                             norm_correction.LastError));
                     GUILayout.Label(string.Format("{0} ► {1}",

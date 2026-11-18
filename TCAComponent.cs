@@ -82,7 +82,7 @@ namespace ThrottleControlledAvionics
         public bool UI_Control { get { return TCA == TCAGui.Instance.TCA; } }
 
         protected void Message(float duration, string msg, params object[] args)
-        { if(UI_Control) Utils.Message(duration, msg, args); }
+        { if(UI_Control) Utils.Message(duration, "{0}", args.Length == 0 ? msg : string.Format(msg, args)); }
 
         protected void Message(string msg, params object[] args) { Message(5, msg, args); }
 

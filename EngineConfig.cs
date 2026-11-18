@@ -44,6 +44,16 @@ namespace ThrottleControlledAvionics
         { Name = e.Group > 0? ("Group "+e.Group) : e.name; Update(e, true); }
         public EngineConfig(EngineConfig c)    { Update(c); }
 
+        public string DisplayName
+        {
+            get
+            {
+                if(Name.StartsWith("Group ") && int.TryParse(Name.Substring(6), out var group))
+                    return Loc.F("EngineConfig_Group", "Group <<1>>", group);
+                return Name;
+            }
+        }
+
         public void Update(EngineConfig c)
         {
             Name  = c.Name;
@@ -107,7 +117,7 @@ namespace ThrottleControlledAvionics
         {
             if(GUILayout.Button("<", Styles.normal_button, GUILayout.Width(15)))
             { Role = TCAEngineInfo.Roles.Prev(Role); Changed = true; }
-            GUILayout.Label(TCAEngineInfo.Roles[Role], GUILayout.Width(130));
+            GUILayout.Label(TCAEngineInfo.RoleLabel(Role), GUILayout.Width(130));
             if(GUILayout.Button(">", Styles.normal_button, GUILayout.Width(15)))
             { Role = TCAEngineInfo.Roles.Next(Role); Changed = true; }
         }
@@ -116,7 +126,7 @@ namespace ThrottleControlledAvionics
         {
             if(GUILayout.Button("<", Styles.normal_button, GUILayout.Width(15)))
             { Mode = TCAEngineInfo.Modes.Prev(Mode); Changed = true; }
-            GUILayout.Label(TCAEngineInfo.Modes[Mode], GUILayout.Width(130));
+            GUILayout.Label(TCAEngineInfo.ModeLabel(Mode), GUILayout.Width(130));
             if(GUILayout.Button(">", Styles.normal_button, GUILayout.Width(15)))
             { Mode = TCAEngineInfo.Modes.Next(Mode); Changed = true; }
         }
@@ -125,12 +135,14 @@ namespace ThrottleControlledAvionics
         {
             if(Edit)
             {
-                Name = GUILayout.TextField(Name, GUILayout.Width(80));
-                Edit &= !GUILayout.Button("Done", Styles.confirm_button, GUILayout.Width(50));
+                var displayName = DisplayName;
+                var editedName = GUILayout.TextField(displayName, GUILayout.Width(80));
+                if(editedName != displayName) Name = editedName;
+                Edit &= !GUILayout.Button(Loc.T("Done", "Done"), Styles.confirm_button, GUILayout.Width(50));
             }
             else 
             {
-                var name = Name+(comment ?? "");
+                var name = DisplayName+(comment ?? "");
                 Edit |= GUILayout.Button(new GUIContent(name, name), 
                                          Styles.normal_button, GUILayout.Width(130));
             }
@@ -140,7 +152,7 @@ namespace ThrottleControlledAvionics
         {
             GUILayout.BeginHorizontal();
             NameControl(comment);
-            if(GUILayout.Button(On? "On" : "Off", On? Styles.enabled_button : Styles.close_button, GUILayout.Width(30)))
+            if(GUILayout.Button(On? Loc.T("On", "On") : Loc.T("Off", "Off"), On? Styles.enabled_button : Styles.close_button, GUILayout.Width(44)))
             { On = !On; Changed = true; }
             if(with_role)
                 RoleControl();
@@ -157,7 +169,7 @@ namespace ThrottleControlledAvionics
                 case TCARole.MANUAL:
                 {
                     GUILayout.BeginHorizontal();
-                    var lim = Utils.FloatSlider("", Limit, 0f, 1f, "P1", 50, "Throttle");
+                    var lim = Utils.FloatSlider("", Limit, 0f, 1f, "P1", 50, Loc.T("Throttle", "Throttle"));
                     if(lim <= lim_eps)
                         lim = 0;
                     if(Mathf.Abs(lim - Limit) > lim_eps)
@@ -232,6 +244,15 @@ namespace ThrottleControlledAvionics
     {
         new public const string NODE_NAME = "ENGINESPROF";
         protected static readonly string[] OnPlanetStates = { "On Planets", "In Space", "Always" };
+        static string OnPlanetState(int i)
+        {
+            switch(i)
+            {
+            case 0: return Loc.T("Profile_OnPlanets", "On Planets");
+            case 1: return Loc.T("Profile_InSpace", "In Space");
+            default: return Loc.T("Profile_Always", "Always");
+            }
+        }
 
         [Persistent] public string Name;
         [Persistent] public bool Active;
@@ -265,6 +286,20 @@ namespace ThrottleControlledAvionics
         }
         public EnginesProfile(string name, IList<EngineWrapper> engines)
         { Name = name; Init(engines); }
+
+        public string DisplayName => DisplayProfileName(Name);
+
+        static string DisplayProfileName(string name)
+        {
+            if(string.IsNullOrEmpty(name))
+                return name;
+            if(name == "Default")
+                return Loc.T("Profile_DefaultName", "Default");
+            if(name.EndsWith(" (Copy)", StringComparison.Ordinal))
+                return DisplayProfileName(name.Substring(0, name.Length - 7))
+                    + Loc.T("Profile_CopySuffix", " (Copy)");
+            return name;
+        }
 
         public void Init(IList<EngineWrapper> engines)
         {
@@ -391,14 +426,14 @@ namespace ThrottleControlledAvionics
 
         void StageControl()
         { 
-            GUILayout.Label(new GUIContent("Stage:", "Automatically activate at stage"), GUILayout.ExpandWidth(false));
+            GUILayout.Label(Loc.Content("Profile_Stage", "Stage:", "Profile_Stage_Tooltip", "Automatically activate at stage"), GUILayout.ExpandWidth(false));
             Stage = Utils.IntSelector(Stage, 0); 
         }
 
         void OnPlanetControl()
         {
-            GUILayout.Label("Active:", GUILayout.ExpandWidth(false));
-            if(GUILayout.Button(new GUIContent(OnPlanetStates[OnPlanet], "When this profile should be active"), 
+            GUILayout.Label(Loc.T("Profile_Active", "Active:"), GUILayout.ExpandWidth(false));
+            if(GUILayout.Button(new GUIContent(OnPlanetState(OnPlanet), Loc.T("Profile_Active_Tooltip", "When this profile should be active")),
                                 Styles.normal_button, GUILayout.Width(80)))
                 OnPlanet = (OnPlanet+1)%3;
         }
@@ -408,35 +443,40 @@ namespace ThrottleControlledAvionics
             if(Active) GUILayout.Toggle(Active, "", GUILayout.Width(15));
             else 
             {
-                Active = GUILayout.Toggle(Active, new GUIContent("", "Activate"), GUILayout.Width(15));
+                Active = GUILayout.Toggle(Active, new GUIContent("", Loc.T("Profile_Activate_Tooltip", "Activate")), GUILayout.Width(15));
                 Changed |= Active;
             }
-            if(Edit) Name = GUILayout.TextField(Name, GUILayout.ExpandWidth(true), GUILayout.MinWidth(50));
-            else GUILayout.Label(Name, Active? Styles.enabled : Styles.white, GUILayout.ExpandWidth(true), GUILayout.MinWidth(50));
+            if(Edit)
+            {
+                var displayName = DisplayName;
+                var editedName = GUILayout.TextField(displayName, GUILayout.ExpandWidth(true), GUILayout.MinWidth(50));
+                if(editedName != displayName) Name = editedName;
+            }
+            else GUILayout.Label(DisplayName, Active? Styles.enabled : Styles.white, GUILayout.ExpandWidth(true), GUILayout.MinWidth(50));
         }
 
         void Switches()
         { 
-            GUILayout.Label("Smart Engines:", GUILayout.ExpandWidth(false));
+            GUILayout.Label(Loc.T("Profile_SmartEngines", "Smart Engines:"), GUILayout.ExpandWidth(false));
             switch(SmartEngines)
             {
             case 0:
-                if(GUILayout.Button("No Change", Styles.normal_button, GUILayout.Width(80)))
+                if(GUILayout.Button(Loc.T("Profile_NoChange", "No Change"), Styles.normal_button, GUILayout.Width(80)))
                     SmartEngines = 1;
                 break;
             case 1:
-                if(GUILayout.Button("Enable", Styles.enabled_button, GUILayout.Width(80)))
+                if(GUILayout.Button(Loc.T("Profile_Enable", "Enable"), Styles.enabled_button, GUILayout.Width(80)))
                     SmartEngines = -1;
                 break;
             case -1:
-                if(GUILayout.Button("Disable", Styles.active_button, GUILayout.Width(80)))
+                if(GUILayout.Button(Loc.T("Profile_Disable", "Disable"), Styles.active_button, GUILayout.Width(80)))
                     SmartEngines = 0;
                 break;
             default: 
                 SmartEngines = 0;
                 break;
             }
-            Utils.ButtonSwitch("AutoLevel", ref Level, "Level the craft when this profile is activated", GUILayout.ExpandWidth(false)); 
+            Utils.ButtonSwitch(Loc.T("Profile_AutoLevel", "AutoLevel"), ref Level, Loc.T("Profile_AutoLevel_Tooltip", "Level the craft when this profile is activated"), GUILayout.ExpandWidth(false));
         }
 
         public bool Draw()
@@ -446,15 +486,15 @@ namespace ThrottleControlledAvionics
             //header controls
             TitleControl();
             //default switch
-            if(Default) GUILayout.Label("Default", Styles.enabled, GUILayout.ExpandWidth(false));
-            else { Default = GUILayout.Toggle(Default, "Default", GUILayout.ExpandWidth(false)); }
+            if(Default) GUILayout.Label(Loc.T("Profile_Default", "Default"), Styles.enabled, GUILayout.ExpandWidth(false));
+            else { Default = GUILayout.Toggle(Default, Loc.T("Profile_Default", "Default"), GUILayout.ExpandWidth(false)); }
             //edit button
-            if(GUILayout.Button(Edit? "Done" : "Edit", 
+            if(GUILayout.Button(Edit? Loc.T("Done", "Done") : Loc.T("Edit", "Edit"),
                 Edit? Styles.confirm_button : Styles.normal_button, GUILayout.Width(50)))
                 Edit = !Edit;
             //delete button
             var delete = !Default && 
-                !GUILayout.Button(new GUIContent("X", "Delete profile"), Styles.close_button, GUILayout.Width(20));
+                !GUILayout.Button(new GUIContent("X", Loc.T("Profile_Delete_Tooltip", "Delete profile")), Styles.close_button, GUILayout.Width(20));
             GUILayout.EndHorizontal();
             if(Edit)
             {
@@ -639,7 +679,7 @@ namespace ThrottleControlledAvionics
             if(del.Count > 0) foreach(var p in del) DB.Remove(p);
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
-            if(GUILayout.Button("Add Profile", Styles.open_button, GUILayout.ExpandWidth(true)))
+            if(GUILayout.Button(Loc.T("Profile_Add", "Add Profile"), Styles.open_button, GUILayout.ExpandWidth(true)))
                 CopyActive();
             GUILayout.EndVertical();
         }

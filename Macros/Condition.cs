@@ -35,15 +35,16 @@ namespace ThrottleControlledAvionics
 
         public Condition() 
         { 
-            Name = Utils.ParseCamelCase(GetType().Name.Replace(typeof(Condition).Name, ""));
+            var shortName = GetType().Name.Replace(typeof(Condition).Name, "");
+            Name = Loc.T("Macro_" + shortName, Utils.ParseCamelCase(shortName));
             Label = new GUIContent(Name);
         }
 
         public Condition(ComponentInfo info) : this()
         {
             if(!string.IsNullOrEmpty(info.Name)) 
-                Name = info.Name;
-            Label = new GUIContent(Name, info.Description);
+                Name = Loc.T("Macro_" + info.Name.Replace(" ", ""), info.Name);
+            Label = new GUIContent(Name, Loc.T("Macro_" + GetType().Name.Replace(typeof(Condition).Name, "") + "_Desc", info.Description));
         }
 
         public override void Load(ConfigNode node)
@@ -86,14 +87,14 @@ namespace ThrottleControlledAvionics
             scroll = GUILayout.BeginScrollView(scroll, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(false));
             GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
-            if(Prev != null && GUILayout.Button(or? "OR" : "AND", Styles.white, GUILayout.Width(40))) or = !or;
-            if(negatable && GUILayout.Button(not? "NOT" : "", Styles.danger, GUILayout.Width(40))) not = !not;
+            if(Prev != null && GUILayout.Button(or? Loc.T("Macro_OR", "OR") : Loc.T("Macro_AND", "AND"), Styles.white, GUILayout.Width(40))) or = !or;
+            if(negatable && GUILayout.Button(not? Loc.T("Macro_NOT", "NOT") : "", Styles.danger, GUILayout.Width(40))) not = !not;
             DrawThis();
-            if(Prev != null && GUILayout.Button(new GUIContent("X", "Delete"), Styles.close_button, GUILayout.Width(20))) Delete();
+            if(Prev != null && GUILayout.Button(new GUIContent("X", Loc.T("Delete_Tooltip", "Delete")), Styles.close_button, GUILayout.Width(20))) Delete();
             if(Next != null) Next.Draw();
             else
             {
-                if(GUILayout.Button(new GUIContent("+", "Add new condition"), Styles.active_button, GUILayout.Width(20))) 
+                if(GUILayout.Button(new GUIContent("+", Loc.T("Macro_AddCondition_Tooltip", "Add new condition")), Styles.active_button, GUILayout.Width(20)))
                     SelectCondition?.Invoke(Add);
             }
             GUILayout.EndHorizontal();
@@ -155,14 +156,14 @@ namespace ThrottleControlledAvionics
                 Value.Draw(Suffix);
                 if(Operator == CompareOperator.EQ)
                 {
-                    GUILayout.Label(new GUIContent("Error", "Interval of tolerance"), 
+                    GUILayout.Label(Loc.Content("Condition_Error", "Error", "Condition_Error_Tooltip", "Interval of tolerance"),
                                     Styles.white, GUILayout.ExpandWidth(false));
                     Error.Draw(Suffix);
                 }
-                GUILayout.Label(new GUIContent("Wait for:", "The condition should be met at least this number of seconds"), 
+                GUILayout.Label(Loc.Content("Condition_WaitFor", "Wait for:", "Condition_WaitFor_Tooltip", "The condition should be met at least this number of seconds"),
                                 Styles.white, GUILayout.ExpandWidth(false));
                 Period.Draw("s");
-                if(GUILayout.Button("Done", Styles.confirm_button, GUILayout.ExpandWidth(false)))
+                if(GUILayout.Button(Loc.T("Done", "Done"), Styles.confirm_button, GUILayout.ExpandWidth(false)))
                 {
                     Value.UpdateValue();
                     Error.UpdateValue();
@@ -180,7 +181,7 @@ namespace ThrottleControlledAvionics
                 var condition_string = string.Format("{0} {1} {2:F1}", Name, OperatorNames[Operator], Value);
                 condition_string += Operator == CompareOperator.EQ? 
                     string.Format("+/-{0:F2}{1}", Error, Suffix) : Suffix;
-                if(Period > 0) condition_string += string.Format(" for {0:F1}s", Period);
+                if(Period > 0) condition_string += string.Format(Loc.T("Condition_Duration", " for {0:F1}s"), Period);
                 Edit |= GUILayout.Button(new GUIContent(condition_string, Label.tooltip), 
                                          Styles.normal_button, GUILayout.ExpandWidth(true));
             }

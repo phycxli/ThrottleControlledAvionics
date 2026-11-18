@@ -38,8 +38,8 @@ namespace ThrottleControlledAvionics
         { 
             get 
             { 
-                var title = Name;
-                if(ActiveChild != null) title += " ["+ActiveChild.Name+"]";
+                var title = DisplayName;
+                if(ActiveChild != null) title += " ["+ActiveChild.DisplayName+"]";
                 return title;
             }
         }
@@ -50,8 +50,10 @@ namespace ThrottleControlledAvionics
             if(Edit) 
             {
                 GUILayout.BeginHorizontal();
-                Name = GUILayout.TextField(Name, GUILayout.ExpandWidth(true), GUILayout.MinWidth(50));
-                if(Parent != null) Edit &= !GUILayout.Button("Done", Styles.confirm_button, GUILayout.Width (40));
+                var displayName = DisplayName;
+                var editedName = GUILayout.TextField(displayName, GUILayout.ExpandWidth(true), GUILayout.MinWidth(50));
+                if(editedName != displayName) Name = editedName;
+                if(Parent != null) Edit &= !GUILayout.Button(Loc.T("Done", "Done"), Styles.confirm_button, GUILayout.Width (40));
                 GUILayout.EndHorizontal();
                 Block.Draw();
             }
@@ -91,9 +93,9 @@ namespace ThrottleControlledAvionics
             {
                 var m = DB.List[i];
                 GUILayout.BeginHorizontal();
-                if(GUILayout.Button("X", Styles.danger_button, GUILayout.Width(20)))
+                if(GUILayout.Button(new GUIContent("X", Loc.T("Delete_Tooltip", "Delete")), Styles.danger_button, GUILayout.Width(20)))
                     del.Add(m);
-                if(GUILayout.Button(m.Name, Styles.normal_button, GUILayout.ExpandWidth(true)))
+                if(GUILayout.Button(m.DisplayName, Styles.normal_button, GUILayout.ExpandWidth(true)))
                 {
                     macro = (TCAMacro)m.GetCopy();
                     ret = true;

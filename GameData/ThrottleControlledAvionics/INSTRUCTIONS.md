@@ -495,4 +495,4 @@ After saving, if the game is already running and a TCA-enabled vessel is in flig
 
 ###Requirements
 
-Currently TCA requires only one other mod which is, of course, the latest **[ModuleManager](http://forum.kerbalspaceprogram.com/index.php?/topic/50533-105-module-manager-2618-january-17th-with-even-more-sha-and-less-bug/)**.
+TCA 3.8.0.1 requires **[ModuleManager](http://forum.kerbalspaceprogram.com/index.php?/topic/50533-105-module-manager-2618-january-17th-with-even-more-sha-and-less-bug/)** and **[AT-Utils](https://github.com/allista/AT_Utils)**. Install compatible versions of both dependencies, or let CKAN resolve them.

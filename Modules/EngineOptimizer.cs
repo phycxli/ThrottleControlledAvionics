@@ -388,7 +388,7 @@ namespace ThrottleControlledAvionics
             if(VSL.Engines.HaveMainEngines
                && max_limit < VSL.PostUpdateControls.mainThrottle * 0.05f
                && !engines.Any(e => e.preset_limit >= 0))
-                Status(0.1, Colors.Danger, "Thrust is disabled because engines cannot be balanced.");
+                Status(0.1, Colors.Danger, Loc.T("EngineBalance_ThrustDisabled", "Thrust is disabled because engines cannot be balanced."));
         }
 
         private void tune_steering_params()

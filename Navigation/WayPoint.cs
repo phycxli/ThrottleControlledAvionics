@@ -45,8 +45,13 @@ namespace ThrottleControlledAvionics
         { set_coordinates(v.latitude, v.longitude, v.altitude); }
 
         public override string ToString() { return string.Format("[{0}] {1}", GetName(), Pos); }
-        public string SurfaceDescription(Vessel vsl) { return Pos.FullDescription(vsl); }
-        public string FullInfo(Vessel vsl) { return GetName()+"\n"+Pos.FullDescription(vsl); }
+        public string SurfaceDescription(Vessel vsl)
+        {
+            return Loc.F("Navigation_SurfaceDescription", "{0}\nAlt: {1} {2}", Pos,
+                Utils.formatBigValue((float)Pos.Alt, "m", "F1"),
+                ScienceUtil.GetExperimentBiomeLocalized(vsl.mainBody, Pos.Lat, Pos.Lon));
+        }
+        public string FullInfo(Vessel vsl) { return GetName()+"\n"+SurfaceDescription(vsl); }
 
         public WayPoint() { AbsRadius = Radius = PointNavigator.C.MinDistance; }
         public WayPoint(Coordinates c) : this() { Pos = c; Name = "Waypoint"; go = new GameObject(); }
@@ -192,7 +197,7 @@ namespace ThrottleControlledAvionics
             Valid = false;
         }
 
-        public string GetName() { return Name; }
+        public string GetName() { return target == null && Name == "Waypoint" ? Loc.T("Navigation_DefaultWaypoint", "Waypoint") : Name; }
         public ITargetable GetTarget() { return target ?? this; }
         public Vector3 GetFwdVector() { return target == null? Vector3.up : target.GetFwdVector(); }
         public Vector3 GetObtVelocity() { return target == null? Vector3.zero : target.GetObtVelocity(); }

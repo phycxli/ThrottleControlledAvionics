@@ -633,7 +633,7 @@ namespace ThrottleControlledAvionics
                 {
                     SetTarget();
                     CFG.AT.On(Attitude.KillRotation);
-                    Message("No target");
+                    Message(Loc.T("Macro_NoTarget", "No target"));
                     break;
                 }
                 if(CFG.AT.state == Attitude.TargetCorrected)
@@ -710,7 +710,7 @@ namespace ThrottleControlledAvionics
             case Attitude.AntiRelVel:
                 if(!VSL.HasTarget)
                 { 
-                    Message("No target");
+                    Message(Loc.T("Macro_NoTarget", "No target"));
                     CFG.AT.On(Attitude.KillRotation);
                     break;
                 }
@@ -730,7 +730,7 @@ namespace ThrottleControlledAvionics
                 var solver = VSL.vessel.patchedConicSolver;
                 if(solver == null || solver.maneuverNodes.Count == 0)
                 { 
-                    Message("No maneuver node");
+                    Message(Loc.T("Macro_NoManeuverNode", "No maneuver node"));
                     CFG.AT.On(Attitude.KillRotation); 
                     break; 
                 }

@@ -1,3 +1,21 @@
+# TCA 3.8.0.1 简体中文汉化
+
+本汉化以 [allista 官方 v3.8.0.1](https://github.com/allista/ThrottleControlledAvionics/tree/v3.8.0.1) 为功能基础，覆盖主界面、编辑器、HUD、宏、科研模块及游戏内手册。中文缺失时回退到英文；内部 ID、用户自定义名称及单位保留原样。汉化与构建检查不代表所有飞行控制及自动驾驶场景均已通过实飞测试。
+
+感谢社区译者 **Aebestach** 及 [Aebestach/ThrottleControlledAvionics](https://github.com/Aebestach/ThrottleControlledAvionics) 项目的本地化工作。本版本复用了其 [本地化提交 `8e769dcd653b2864054642df3692ec789bd2aed4`](https://github.com/Aebestach/ThrottleControlledAvionics/commit/8e769dcd653b2864054642df3692ec789bd2aed4)，并补充翻译与显示适配。项目及本汉化遵循 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)；原作者、贡献者署名及版权原文保留于下方和源码中。
+
+## 构建与验证
+
+`build.ps1` 使用本机 KSP 1.12.5 与已安装 AT-Utils 的程序集编译官方基线和汉化版本，并生成 `build/TCA-3.8.0.1-zh-CN.1.zip`。`verify.ps1` 检查双语键、格式占位符、翻译引用、公开接口、航点坐标绑定及基线差异；这类检查不能替代实际游戏中的界面检查与测试飞行。两个脚本默认使用 `D:\SteamLibrary\steamapps\common\Kerbal Space Program`，也可通过 `-KspPath` 指定安装路径。
+
+源码仓库中的 `GameData/ThrottleControlledAvionics/tca_ui.bundle` 是指向其他仓库资源的符号链接，在部分 Windows 检出中会表现为 **50 字节的链接文本**。制作发行包时，必须保留或使用现装官方 3.8.0.1 的真实 `tca_ui.bundle` 资源文件，不能用这段链接文本覆盖它。
+
+## 安装
+
+退出游戏后再覆盖 `GameData/ThrottleControlledAvionics`。安装前保留用户的 `config.xml`、`TCA.conf`、全局宏文件 `TCA.macro` 及存档中的宏与配置，并保留上述官方真实 `tca_ui.bundle`。确认 ModuleManager 和兼容的 AT-Utils 已安装。
+
+---
+
 #Throttle Controlled Avionics
 
 *Originally created by

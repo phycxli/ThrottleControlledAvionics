@@ -37,6 +37,7 @@ namespace ThrottleControlledAvionics
         protected override void init_controller()
         {
             base.init_controller();
+            HudLocalization.Apply(Controller);
             if(Connected)
                 OnLateUpdate();
         }
@@ -68,6 +69,7 @@ namespace ThrottleControlledAvionics
         {
             if(!Connected)
                 return;
+            HudLocalization.UpdateTooltipFont();
             if(IsShown)
             {
                 if(shouldShow)

@@ -59,7 +59,7 @@ namespace ThrottleControlledAvionics
         {
             if(TCA == null || action.host != VSL.vessel) return;
             if(TimeWarp.CurrentRate > 1)
-                Message("Disengaging Time Warp on SOI change...");
+                Message(Loc.T("Warp_SOIChanged", "Disengaging Time Warp on SOI change..."));
             AbortWarp();
         }
 
@@ -104,7 +104,7 @@ namespace ThrottleControlledAvionics
 //                    TimeWarp.fetch.GetMaxRateForAltitude(VSL.vessel.altitude, VSL.Body),
 //                    frames_to_skip);
                 if(frames_to_skip-- > 0) return;
-                Message("TCA Time Warp was overridden.");
+                Message(Loc.T("Warp_Overridden", "TCA Time Warp was overridden."));
                 VSL.Controls.WarpToTime = -1;
                 CFG.WarpToNode = false; 
                 goto end; 

@@ -24,6 +24,21 @@ namespace ThrottleControlledAvionics
         [Persistent] public bool Active;
         [Persistent] public bool Done;
         protected GUIContent Label;
+        protected string DefaultName;
+
+        public string DisplayName
+        {
+            get
+            {
+                if(this is TCAMacro)
+                    return Name == "Empty Macro" ? Loc.T("Macro_Empty", "Empty Macro") : Name;
+                if(Name != DefaultName)
+                    return Name;
+                var shortName = GetType().Name.Replace(typeof(MacroNode).Name, "");
+                var label = Loc.T("Macro_" + shortName, Name);
+                return Name.EndsWith(":") && !label.EndsWith(":") ? label + ":" : label;
+            }
+        }
 
         public virtual bool Edit { get; set; }
 
@@ -32,14 +47,17 @@ namespace ThrottleControlledAvionics
 
         public MacroNode()
         { 
-            Name = Utils.ParseCamelCase(GetType().Name.Replace(typeof(MacroNode).Name, "")); 
-            Label = new GUIContent(Name);
+            var shortName = GetType().Name.Replace(typeof(MacroNode).Name, "");
+            Name = DefaultName = Utils.ParseCamelCase(shortName);
+            Label = new GUIContent(DisplayName);
         }
 
         public MacroNode(ComponentInfo info) : this()
         {
-            if(!string.IsNullOrEmpty(info.Name)) Name = info.Name;
-            Label = new GUIContent(Name, info.Description);
+            if(!string.IsNullOrEmpty(info.Name))
+                Name = DefaultName = info.Name;
+            if(!string.IsNullOrEmpty(info.Description))
+                Label = new GUIContent(DisplayName, Loc.T("Macro_" + GetType().Name.Replace(typeof(MacroNode).Name, "") + "_Desc", info.Description));
         }
 
         public override void Load(ConfigNode node)
@@ -65,7 +83,7 @@ namespace ThrottleControlledAvionics
         protected virtual void DrawDeleteButton()
         {
             if(Parent != null && Parent.Edit &&
-               GUILayout.Button(new GUIContent("X", "Delete"), 
+               GUILayout.Button(new GUIContent("X", Loc.T("Delete_Tooltip", "Delete")),
                                 Styles.close_button, 
                                 GUILayout.Width(20)))
                 Parent.OnChildRemove(this);
@@ -136,7 +154,10 @@ namespace ThrottleControlledAvionics
         { EditedCFG = cfg; }
 
         protected void Message(string msg)
-        { Utils.Message("{0}: {1}", Name, msg); }
+        { Utils.Message("{0}: {1}", DisplayName, msg); }
+
+        protected void Message(string key, string msg)
+        { Message(Loc.T(key, msg)); }
 
         #if DEBUG
         protected void Log(VesselWrapper VSL, string msg, params object[] args)

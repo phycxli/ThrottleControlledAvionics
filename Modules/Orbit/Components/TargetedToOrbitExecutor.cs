@@ -105,7 +105,7 @@ namespace ThrottleControlledAvionics
                 else
                     CFG.BR.OffIfOn(BearingMode.Auto);
             }
-            Status("Gravity turn...");
+            Status(Loc.T("ToOrbit_GravityTurn", "Gravity turn..."));
             return true;
         }
     }

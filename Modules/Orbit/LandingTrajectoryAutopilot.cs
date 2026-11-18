@@ -139,8 +139,8 @@ namespace ThrottleControlledAvionics
                 get
                 {
                     if(Best == null)
-                        return "Computing landing trajectory...";
-                    return string.Format("Computing landing trajectory.\n" + "Landing site error: {0}",
+                        return Loc.T("Landing_ComputingTrajectory", "Computing landing trajectory...");
+                    return Loc.F("Landing_ComputingTrajectoryError", "Computing landing trajectory.\n" + "Landing site error: {0}",
                         Utils.formatBigValue((float)Best.DistanceToTarget, "m"));
                 }
             }
@@ -180,7 +180,7 @@ namespace ThrottleControlledAvionics
             StageTimer.action = () =>
             {
                 VSL.ActivateNextStage();
-                Message("Have to drop ballast to decelerate...");
+                Message(Loc.T("Landing_DropBallast", "Have to drop ballast to decelerate..."));
             };
             dP_up_timer.action = () =>
             {
@@ -231,20 +231,20 @@ namespace ThrottleControlledAvionics
             var orb = CFG.Target.GetOrbit();
             if(orb != null && orb.referenceBody != VSL.Body)
             {
-                Status(Colors.Warning, "Target should be in the same sphere of influence.");
+                Status(Colors.Warning, Loc.T("Landing_TargetSameSOI", "Target should be in the same sphere of influence."));
                 return false;
             }
             if(!CFG.Target.IsProxy)
                 return true;
             if(!CFG.Target.IsVessel)
             {
-                Status(Colors.Warning, "Target should be a vessel or a waypoint");
+                Status(Colors.Warning, Loc.T("Landing_TargetVesselOrWaypoint", "Target should be a vessel or a waypoint"));
                 return false;
             }
             // ReSharper disable once InvertIf
             if(!TargetVessel.LandedOrSplashed)
             {
-                Status(Colors.Warning, "Target vessel should be landed");
+                Status(Colors.Warning, Loc.T("Landing_TargetVesselLanded", "Target vessel should be landed"));
                 return false;
             }
             return true;
@@ -255,21 +255,21 @@ namespace ThrottleControlledAvionics
             if(VSL.Engines.NoActiveEngines)
             {
                 Status(Colors.Warning,
-                    "No engines are active, unable to calculate trajectory.\n"
-                    + "Please, activate ship's engines and try again.");
+                    Loc.T("Landing_NoActiveEngines", "No engines are active, unable to calculate trajectory.\n"
+                    + "Please, activate ship's engines and try again."));
                 return false;
             }
             if(!VSL.Engines.HaveThrusters)
             {
                 Status(Colors.Warning,
-                    "There are only Maneuver/Manual engines in current profile.\n" + "Please, change engines profile.");
+                    Loc.T("Landing_OnlyManeuverEngines", "There are only Maneuver/Manual engines in current profile.\n" + "Please, change engines profile."));
                 return false;
             }
             if(DiscontinuousOrbit(VesselOrbit))
             {
                 Status(Colors.Warning,
-                    "Ship's orbit is discontinuous.\n"
-                    + "Cannot perform a targeted landing from unstable orbit.");
+                    Loc.T("Landing_DiscontinuousOrbit", "Ship's orbit is discontinuous.\n"
+                    + "Cannot perform a targeted landing from unstable orbit."));
                 return false;
             }
             VSL.OnPlanetParams.DragCurveK = AtmoSim.C.DragCurveK;
@@ -291,23 +291,23 @@ namespace ThrottleControlledAvionics
                 return true;
             if(!enough_fuel)
             {
-                status += "<b>WARNING</b>: Fuel is "
+                status += Loc.T("Landing_FuelWarningPrefix", "<b>WARNING</b>: Fuel is ")
                           + Colors.Selected2.Tag("<b>{0:P0}</b>",
                               (needed_hover_time - hover_time) / needed_hover_time)
-                          + "below safe margin for powered landing.\n";
+                          + Loc.T("Landing_FuelWarningSuffix", "below safe margin for powered landing.\n");
                 if(Body.atmosphere && VSL.OnPlanetParams.HaveParachutes)
-                    status += "<i>Landing with parachutes may be possible, "
-                              + "but you're advised to supervise the process.</i>\n";
+                    status += Loc.T("Landing_ParachuteSupervision", "<i>Landing with parachutes may be possible, "
+                              + "but you're advised to supervise the process.</i>\n");
             }
             if(trajectory.DistanceToTarget > C.Dtol)
-                status += "<b>WARNING</b>: Predicted landing site is too far from the target.\nError is "
+                status += Loc.T("Landing_SiteWarning", "<b>WARNING</b>: Predicted landing site is too far from the target.\nError is ")
                           + Colors.Selected2.Tag("<b>{0}</b>\n",
                               Utils.formatBigValue((float)trajectory.DistanceToTarget, "m"));
             if(trajectory.WillOverheat)
-                status += "<b>WARNING</b>: predicted reentry temperature is "
+                status += Loc.T("Landing_TemperatureWarning", "<b>WARNING</b>: predicted reentry temperature is ")
                           + Colors.Selected2.Tag("<b>{0:F0}K</b>\n", trajectory.MaxShipTemperature)
-                          + Colors.Danger.Tag("<b>The ship may loose integrity and explode!</b>\n");
-            status += Colors.Danger.Tag("\n<b>Push to proceed. At your own risk.</b>");
+                          + Colors.Danger.Tag(Loc.T("Landing_ExplosionWarning", "<b>The ship may loose integrity and explode!</b>\n"));
+            status += Colors.Danger.Tag(Loc.T("Landing_ProceedRisk", "\n<b>Push to proceed. At your own risk.</b>"));
             Status(Colors.Warning, status);
             return false;
         }
@@ -357,11 +357,11 @@ namespace ThrottleControlledAvionics
                     }
                     else
                     {
-                        Status("Correcting trajectory...");
+                        Status(Loc.T("Landing_CorrectingTrajectory", "Correcting trajectory..."));
                         return true;
                     }
                 }
-                Status("Coasting...");
+                Status(Loc.T("Landing_Coasting", "Coasting..."));
                 VSL.Controls.NoDewarpOffset = true;
                 if(!correct_trajectory())
                 {
@@ -489,7 +489,7 @@ namespace ThrottleControlledAvionics
             var dist = -1.0;
             while(UT0 < stop)
             {
-                Status("Scanning for obstacles: " + Colors.Good.Tag("{0:P1}"),
+                Status(Loc.T("Landing_ScanningObstacles", "Scanning for obstacles: ") + Colors.Good.Tag("{0:P1}"),
                     Math.Min(1, (UT1 - start) / (stop - start)));
                 var d = obstacle_between(trj, UT0, UT1, offset);
                 UT0 = UT1;
@@ -731,9 +731,9 @@ namespace ThrottleControlledAvionics
                 scanner.Start(CFG.Target.Pos, C.PointsPerFrame, 0.01);
                 scanner.MaxDist = CorrectionMaxDist.Value * 1000;
             }
-            Status("Scanning for {0} surface to land: {1}",
-                Colors.Active.Tag("<b>flat</b>"),
-                Colors.Good.Tag(scanner.Progress.ToString("P1")));
+            Status(Loc.F("Lander_ScanningSurface", "Scanning for {0} surface to land: {1}",
+                Colors.Active.Tag(Loc.T("Landing_FlatSurface", "<b>flat</b>")),
+                Colors.Good.Tag(scanner.Progress.ToString("P1"))));
             if(scanner.Scan())
                 return;
             if(scanner.FlatRegion != null)
@@ -746,8 +746,8 @@ namespace ThrottleControlledAvionics
                     update_trajectory(true);
                     update_landing_trajectory();
                     Utils.Message(scanner.BestUnevenness < AutoLander.C.MaxUnevenness
-                        ? "Found flat region for landing."
-                        : "Moved landing site to a flatter region.");
+                        ? Loc.T("Landing_FoundFlatRegion", "Found flat region for landing.")
+                        : Loc.T("Landing_MovedToFlatter", "Moved landing site to a flatter region."));
                 }
             }
             scanned = true;
@@ -854,7 +854,7 @@ namespace ThrottleControlledAvionics
             switch(landing_stage)
             {
                 case LandingStage.Wait:
-                    Status("Preparing for deceleration...");
+                    Status(Loc.T("Landing_PreparingDeceleration", "Preparing for deceleration..."));
                     THR.Throttle = 0;
                     nose_to_target();
                     rel_altitude_if_needed();
@@ -907,7 +907,7 @@ namespace ThrottleControlledAvionics
                     CFG.BR.Off();
                     if(Working)
                     {
-                        Status(Colors.Danger, "Possible collision detected.");
+                        Status(Colors.Danger, Loc.T("Landing_CollisionDetected", "Possible collision detected."));
                         correct_attitude_with_thrusters(
                             VSL.Torque.MaxPossible.RotationTime2Phase(VSL.Controls.AttitudeError));
                         Executor.Execute(VSL.Physics.Up * 10);
@@ -921,14 +921,14 @@ namespace ThrottleControlledAvionics
                         start_landing();
                         break;
                     }
-                    Status("Decelerating. Landing site error: {0}",
-                        Utils.formatBigValue((float)trajectory.DistanceToTarget, "m"));
+                    Status(Loc.F("Landing_DeceleratingError", "Decelerating. Landing site error: {0}",
+                        Utils.formatBigValue((float)trajectory.DistanceToTarget, "m")));
                     scan_for_landing_site();
                     do_aerobraking_if_requested();
                     var overheating = is_overheating();
                     if(!overheating && VSL.Engines.AvailableFuelMass / VSL.Engines.MaxMassFlow < C.LandingThrustTime)
                     {
-                        Message(10, "Not enough fuel for powered landing.\nPerforming emergency landing...");
+                        Message(10, Loc.T("Landing_EmergencyNoFuel", "Not enough fuel for powered landing.\nPerforming emergency landing..."));
                         landing_stage = LandingStage.HardLanding;
                         break;
                     }
@@ -973,8 +973,8 @@ namespace ThrottleControlledAvionics
                     landing_trajectory = null;
                     break;
                 case LandingStage.Coast:
-                    Status("Coasting. Landing site error: {0}",
-                        Utils.formatBigValue((float)trajectory.DistanceToTarget, "m"));
+                    Status(Loc.F("Landing_CoastingError", "Coasting. Landing site error: {0}",
+                        Utils.formatBigValue((float)trajectory.DistanceToTarget, "m")));
                     scan_for_landing_site();
                     if(is_overheating())
                     {
@@ -1018,7 +1018,7 @@ namespace ThrottleControlledAvionics
                         var rel_Ve = VSL.Engines.RelVeASL;
                         if(rel_Ve <= 0)
                         {
-                            Message(10, "Not enough thrust for powered landing.\nPerforming emergency landing...");
+                            Message(10, Loc.T("Landing_EmergencyNoThrust", "Not enough thrust for powered landing.\nPerforming emergency landing..."));
                             landing_stage = LandingStage.HardLanding;
                             break;
                         }
@@ -1026,7 +1026,7 @@ namespace ThrottleControlledAvionics
                            && !VSL.Torque.HavePotentialControlAuthority
                            && Utils.Angle2(VSL.Engines.CurrentDefThrustDir, (Vector3)VSL.vessel.srf_velocity) > 45)
                         {
-                            Message(10, "Lacking control authority to land properly.\nPerforming emergency landing...");
+                            Message(10, Loc.T("Landing_EmergencyNoControl", "Lacking control authority to land properly.\nPerforming emergency landing..."));
                             landing_stage = LandingStage.HardLanding;
                             break;
                         }
@@ -1037,7 +1037,7 @@ namespace ThrottleControlledAvionics
                            && (fuel_needed >= fuel_left
                                || VSL.Engines.MaxHoverTimeASL(fuel_left - fuel_needed) < needed_hover_time))
                         {
-                            Message(10, "Not enough fuel for powered landing.\nPerforming emergency landing...");
+                            Message(10, Loc.T("Landing_EmergencyNoFuel", "Not enough fuel for powered landing.\nPerforming emergency landing..."));
                             landing_stage = LandingStage.HardLanding;
                             break;
                         }
@@ -1046,11 +1046,11 @@ namespace ThrottleControlledAvionics
                     break;
                 case LandingStage.HardLanding:
                     var status = VSL.OnPlanetParams.ParachutesActive
-                        ? "<b>Landing on parachutes.</b>"
-                        : "<b>Emergency Landing.</b>";
+                        ? Loc.T("Landing_ParachuteLanding", "<b>Landing on parachutes.</b>")
+                        : Loc.T("Landing_EmergencyLanding", "<b>Emergency Landing.</b>");
                     status = Colors.Warning.Tag(status);
-                    status +=
-                        $"\nVertical impact speed: <b>{Colors.Danger.Tag(Utils.formatBigValue((float)terminal_velocity, "m/s"))}</b>";
+                    status += Loc.F("Landing_ImpactSpeed", "\nVertical impact speed: <b><<1>></b>",
+                        Colors.Danger.Tag(Utils.formatBigValue((float)terminal_velocity, "m/s")));
                     set_destination_vector();
                     CFG.BR.Off();
                     THR.Throttle = 0;
@@ -1080,7 +1080,7 @@ namespace ThrottleControlledAvionics
                             THR.CorrectThrottle = false;
                             THR.Throttle = VSL.VerticalSpeed.Absolute < -5 ? 1 : VSL.OnPlanetParams.GeeVSF;
                         }
-                        status += "\nWill decelerate as much as possible before impact.";
+                        status += Loc.T("Landing_DecelerateBeforeImpact", "\nWill decelerate as much as possible before impact.");
                     }
                     if(Body.atmosphere && VSL.OnPlanetParams.HaveUsableParachutes)
                     {
@@ -1110,11 +1110,11 @@ namespace ThrottleControlledAvionics
                                              && VSL.vessel.dynamicPressurekPa > C.DropBallastThreshold * pressureASL
                                              && VSL.vessel.mach > C.MachThreshold);
                             if(CFG.AutoParachutes)
-                                status += "\nWaiting for the right moment to deploy parachutes.";
+                                status += Loc.T("Landing_WaitParachutes", "\nWaiting for the right moment to deploy parachutes.");
                             else
                                 status += Colors.Danger
-                                    .Tag("\nAutomatic parachute deployment is disabled."
-                                         + "\nActivate parachutes manually when needed.");
+                                    .Tag(Loc.T("Landing_ManualParachutes", "\nAutomatic parachute deployment is disabled."
+                                         + "\nActivate parachutes manually when needed."));
                         }
                     }
                     if(Body.atmosphere)
@@ -1125,7 +1125,7 @@ namespace ThrottleControlledAvionics
                     {
                         if(Body.atmosphere && not_too_hot)
                             brake_with_drag();
-                        status += Colors.Danger.Tag("\n<b>Crash is imminent!</b>");
+                        status += Colors.Danger.Tag(Loc.T("Landing_CrashImminent", "\n<b>Crash is imminent!</b>"));
                     }
                     Status(status);
                     break;
@@ -1144,7 +1144,7 @@ namespace ThrottleControlledAvionics
                         var CPS_Correction = CPS.CourseCorrection;
                         if(!CPS_Correction.IsZero())
                         {
-                            Status(Colors.Danger, "Avoiding collision!");
+                            Status(Colors.Danger, Loc.T("Landing_AvoidingCollision", "Avoiding collision!"));
                             CFG.Target = trajectory.SurfacePoint;
                             trajectory.Target = CFG.Target;
                             trajectory.TargetAltitude = CFG.Target.Pos.Alt;
@@ -1168,11 +1168,11 @@ namespace ThrottleControlledAvionics
                         {
                             // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
                             if(VSL.Controls.InvAlignmentFactor > 0.5)
-                                Status("Final deceleration: correcting attitude.\nLanding site error: {0}",
-                                    Utils.formatBigValue((float)trajectory.DistanceToTarget, "m"));
+                                Status(Loc.F("Landing_FinalDecelAttitude", "Final deceleration: correcting attitude.\nLanding site error: {0}",
+                                    Utils.formatBigValue((float)trajectory.DistanceToTarget, "m")));
                             else
-                                Status("Final deceleration: waiting for the burn.\nLanding site error: {0}",
-                                    Utils.formatBigValue((float)trajectory.DistanceToTarget, "m"));
+                                Status(Loc.F("Landing_FinalDecelWait", "Final deceleration: waiting for the burn.\nLanding site error: {0}",
+                                    Utils.formatBigValue((float)trajectory.DistanceToTarget, "m")));
                             break;
                         }
                     }
@@ -1214,8 +1214,8 @@ namespace ThrottleControlledAvionics
                            && VSL.VerticalSpeed.Absolute < 0)
                         {
                             Working = THR.Throttle > 0.7 || VSL.Info.Countdown < 10;
-                            Status("Final deceleration. Landing site error: {0}",
-                                Utils.formatBigValue((float)trajectory.DistanceToTarget, "m"));
+                            Status(Loc.F("Landing_FinalDecel", "Final deceleration. Landing site error: {0}",
+                                Utils.formatBigValue((float)trajectory.DistanceToTarget, "m")));
                             break;
                         }
                     }
@@ -1232,7 +1232,7 @@ namespace ThrottleControlledAvionics
                     }
                     break;
                 case LandingStage.LandHere:
-                    Status(Colors.Good, "Landing...");
+                    Status(Colors.Good, Loc.T("Lander_Landing", "Landing..."));
                     CFG.BR.Off();
                     CFG.BlockThrottle = true;
                     CFG.AltitudeAboveTerrain = true;
@@ -1244,7 +1244,7 @@ namespace ThrottleControlledAvionics
                         CFG.DesiredAltitude = Utils.ClampL(VSL.Altitude.Relative / 2, VSL.Geometry.H * 2);
                     break;
                 case LandingStage.Approach:
-                    Status("Approaching the target...");
+                    Status(Loc.T("Landing_ApproachingTarget", "Approaching the target..."));
                     set_destination_vector();
                     if(VSL.Engines.AvailableFuelMass / VSL.Engines.MaxMassFlow < C.LandingThrustTime)
                     {
@@ -1268,33 +1268,34 @@ namespace ThrottleControlledAvionics
         {
             GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
-            Utils.ButtonSwitch("Use Brakes", ref UseBrakes, "Use brakes during deceleration.");
+            Utils.ButtonSwitch(Loc.T("Landing_UseBrakes", "Use Brakes"), ref UseBrakes, Loc.T("Landing_UseBrakes_Tooltip", "Use brakes during deceleration."));
             if(Body.atmosphere && VSL.OnPlanetParams.HaveParachutes)
-                Utils.ButtonSwitch("Use Parachutes", ref UseChutes, "Use parachutes during deceleration.");
+                Utils.ButtonSwitch(Loc.T("Landing_UseParachutes", "Use Parachutes"), ref UseChutes, Loc.T("Landing_UseParachutes_Tooltip", "Use parachutes during deceleration."));
             else
-                GUILayout.Label("Use Parachutes", Styles.inactive_button);
-            Utils.ButtonSwitch("Correct Target",
+                GUILayout.Label(Loc.T("Landing_UseParachutes", "Use Parachutes"), Styles.inactive_button);
+            Utils.ButtonSwitch(Loc.T("Landing_CorrectTarget", "Correct Target"),
                 ref CorrectTarget,
-                "Search for a flat surface before deceleration and correct the target site.");
-            Utils.ButtonSwitch("Land ASAP",
+                Loc.T("Landing_CorrectTarget_Tooltip", "Search for a flat surface before deceleration and correct the target site."));
+            Utils.ButtonSwitch(Loc.T("Landing_LandASAP", "Land ASAP"),
                 ref LandASAP,
-                "Do not try to Go To the target if missed or to search for a landing site near the surface.");
+                Loc.T("Landing_LandASAP_Tooltip", "Do not try to Go To the target if missed or to search for a landing site near the surface."));
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-            GUILayout.Label(new GUIContent("Max. Correction:",
+            GUILayout.Label(Loc.Content("Landing_MaxCorrection", "Max. Correction:",
+                "Landing_MaxCorrection_Tooltip",
                 "Maximum distance of a corrected landing site from the original one"));
             CorrectionMaxDist.Draw("km", 1f, "F1", suffix_width: 25);
             GUILayout.FlexibleSpace();
             if(CFG.AP2[program])
             {
-                if(GUILayout.Button(new GUIContent("Abort", "Abort " + program_name),
+                if(GUILayout.Button(Loc.Content("Abort", "Abort", "Landing_Abort_Tooltip", Loc.F("Landing_AbortProgram", "Abort <<1>>", program_name)),
                     Styles.danger_button,
                     GUILayout.Width(60)))
                     CFG.AP2.XOff();
             }
             else
             {
-                if(GUILayout.Button(new GUIContent("Start", "Start " + program_name),
+                if(GUILayout.Button(Loc.Content("Start", "Start", "Landing_Start_Tooltip", Loc.F("Landing_StartProgram", "Start <<1>>", program_name)),
                     Styles.enabled_button,
                     GUILayout.Width(60)))
                 {

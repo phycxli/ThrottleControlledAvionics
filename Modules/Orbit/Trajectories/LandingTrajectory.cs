@@ -84,7 +84,7 @@ namespace ThrottleControlledAvionics
             approach = new Coordinates((at_target_rot * path.PointAtUT(path.EndUT - 1).pos).xzy + Body.position, Body);
             SurfacePoint = new WayPoint((at_target_rot * AtTargetPos).xzy + Body.position, Body);
             SurfacePoint.Pos.SetAlt2Surface(Body);
-            SurfacePoint.Name = "Landing Site";
+            SurfacePoint.Name = Loc.T("Navigation_LandingSite", "Landing Site");
         }
 
         void update_overheat_info(LandingPath trj, double startT)
@@ -306,7 +306,7 @@ namespace ThrottleControlledAvionics
             }
             //compute distance to target
             DistanceToTarget = Target.AngleTo(SurfacePoint) * Body.Radius;
-            SurfacePoint.Name += $"\n{Utils.formatBigValue((float)DistanceToTarget, "m")} from target";
+            SurfacePoint.Name += Loc.F("Navigation_DistanceFromTarget", "\n<<1>> from target", Utils.formatBigValue((float)DistanceToTarget, "m"));
             //compute distance in lat-lon coordinates
             DeltaLat = Utils.AngleDelta(SurfacePoint.Pos.Lat, Target.Pos.Lat) *
             Math.Sign(Utils.AngleDelta(approach.Lat, SurfacePoint.Pos.Lat));

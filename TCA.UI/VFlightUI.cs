@@ -66,6 +66,14 @@ namespace TCA.UI
     {
         public Slider slider;
         public Text display;
+        private string offLabel = "OFF";
+
+        public void SetOffLabel(string label)
+        {
+            offLabel = label;
+            if(value >= max)
+                display.text = offLabel;
+        }
 
         public float min;
 
@@ -100,7 +108,7 @@ namespace TCA.UI
             if(value < max)
                 display.text = FormatUtils.formatBigValue(value, "m/s", "+0.0;-0.0; 0.0");
             else
-                display.text = "OFF";
+                display.text = offLabel;
         }
 
         private void Awake()
@@ -138,6 +146,15 @@ namespace TCA.UI
     {
         public FloatController Altitude;
         private bool altitudeAboveGround;
+        private string tooltipAboveGround = "Desired altitude is above the ground";
+        private string tooltipBelowGround = "Warning! Desired altitude is below the ground";
+
+        public void SetAltitudeTooltipTexts(string aboveGround, string belowGround)
+        {
+            tooltipAboveGround = aboveGround;
+            tooltipBelowGround = belowGround;
+            Altitude.inputTooltip.text = altitudeAboveGround ? tooltipAboveGround : tooltipBelowGround;
+        }
 
         public override FloatEvent onValueChanged => Altitude.onValueChanged;
 
@@ -152,14 +169,14 @@ namespace TCA.UI
                 return;
             if(above)
             {
-                Altitude.inputTooltip.text = "Desired altitude is above the ground";
+                Altitude.inputTooltip.text = tooltipAboveGround;
                 Colors.Danger.removeOnColorChangeListner(onInputColorChange);
                 Colors.Good.addOnColorChangeListner(onInputColorChange);
                 onInputColorChange(Colors.Good);
             }
             else
             {
-                Altitude.inputTooltip.text = "Warning! Desired altitude is below the ground";
+                Altitude.inputTooltip.text = tooltipBelowGround;
                 Colors.Good.removeOnColorChangeListner(onInputColorChange);
                 Colors.Danger.addOnColorChangeListner(onInputColorChange);
                 onInputColorChange(Colors.Danger);
